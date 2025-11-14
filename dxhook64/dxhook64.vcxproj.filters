@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="소스 파일\Hook">
+      <UniqueIdentifier>{32631deb-6e38-4d41-9761-799bc6b3641c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Hook\syscall">
+      <UniqueIdentifier>{ca4e3dbe-0750-4d9d-a2fd-7531f5632f49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Hook\HookManager">
+      <UniqueIdentifier>{1a5c6257-87a3-4049-83da-c10728d485d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Hook\ret_spoofing">
+      <UniqueIdentifier>{729a548d-59fd-4274-8a59-50355234a780}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Hook\FindSig">
+      <UniqueIdentifier>{519f19bc-310a-4690-9df5-d224fcd3323c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Render">
+      <UniqueIdentifier>{39a5fc06-bac7-4bd1-90d2-38e9b3ce7bc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Render\imgui">
+      <UniqueIdentifier>{e854cb8f-99c0-4d29-bab8-d5cf92c4add2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Hook\HookManager\HookManager.cpp">
+      <Filter>소스 파일\Hook\HookManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Hook\FindSig\FindSig.cpp">
+      <Filter>소스 파일\Hook\FindSig</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Render.cpp">
+      <Filter>소스 파일\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\DirectX.cpp">
+      <Filter>소스 파일\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Imgui\imgui.cpp">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Imgui\imgui_demo.cpp">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Imgui\imgui_draw.cpp">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Imgui\imgui_impl_dx11.cpp">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Imgui\imgui_impl_win32.cpp">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Imgui\imgui_tables.cpp">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Imgui\imgui_widgets.cpp">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Hook\syscall\syscall.h">
+      <Filter>소스 파일\Hook\syscall</Filter>
+    </ClInclude>
+    <ClInclude Include="Hook\HookManager\HookManager.h">
+      <Filter>소스 파일\Hook\HookManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Hook\FindSig\FindSig.h">
+      <Filter>소스 파일\Hook\FindSig</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Render.h">
+      <Filter>소스 파일\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\DirectX.h">
+      <Filter>소스 파일\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Imgui\imconfig.h">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Imgui\imgui.h">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Imgui\imgui_impl_dx11.h">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Imgui\imgui_impl_win32.h">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Imgui\imgui_internal.h">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Imgui\imstb_rectpack.h">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Imgui\imstb_textedit.h">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Imgui\imstb_truetype.h">
+      <Filter>소스 파일\Render\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Hook\ret_spoofing\ret_spoofing.h">
+      <Filter>소스 파일\Hook\ret_spoofing</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="Hook\ret_spoofing\shellcode.asm">
+      <Filter>소스 파일\Hook\ret_spoofing</Filter>
+    </MASM>
+  </ItemGroup>
+</Project>

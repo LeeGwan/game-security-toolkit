@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="소스 파일\Gui">
+      <UniqueIdentifier>{433ff7d7-6145-483e-b78f-d9794ad7e8b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Gui\Application">
+      <UniqueIdentifier>{0695569f-eedd-4955-8d11-ca74c86b49e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Gui\Window">
+      <UniqueIdentifier>{f8ab5d15-a60e-422f-809b-aeff5fc613e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Gui\D3DRenderer">
+      <UniqueIdentifier>{ffee0895-73d4-4cbc-80c1-2e079a278d2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Gui\ImGuiManager">
+      <UniqueIdentifier>{db474787-1413-4b95-a504-4d1ec73bd0d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Imgui">
+      <UniqueIdentifier>{c7771aaf-b9a0-4565-b86b-f7524d8dda11}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Gui\Application\Application.cpp">
+      <Filter>소스 파일\Gui\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Gui\D3DRenderer\D3DRenderer.cpp">
+      <Filter>소스 파일\Gui\D3DRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Gui\ImGuiManager\ImGuiManager.cpp">
+      <Filter>소스 파일\Gui\ImGuiManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Gui\Window\Window.cpp">
+      <Filter>소스 파일\Gui\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui.cpp">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui_demo.cpp">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui_draw.cpp">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui_impl_dx11.cpp">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui_impl_win32.cpp">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui_tables.cpp">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui_widgets.cpp">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Gui\Application\Application.h">
+      <Filter>소스 파일\Gui\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Gui\D3DRenderer\D3DRenderer.h">
+      <Filter>소스 파일\Gui\D3DRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Gui\ImGuiManager\ImGuiManager.h">
+      <Filter>소스 파일\Gui\ImGuiManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Gui\Window\Window.h">
+      <Filter>소스 파일\Gui\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imconfig.h">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imgui.h">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imgui_impl_dx11.h">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imgui_impl_win32.h">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imgui_internal.h">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imstb_rectpack.h">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imstb_textedit.h">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imstb_truetype.h">
+      <Filter>소스 파일\Imgui</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
