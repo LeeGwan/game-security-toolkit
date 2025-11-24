@@ -134,15 +134,6 @@ if (!AntiCheat::ValidateCallStack()) {
 }
 ```
 
-## 📚 Real-World Analysis Cases
-
-Techniques implemented in this project are based on analysis of actual cheat programs:
-
-- **Memory Manipulation Cheats**: Pattern scan → Value modification
-- **ESP/WH Cheats**: DirectX hooking → Rendering manipulation
-- **No-Recoil Cheats**: Code patching → Physics calculation bypass
-- **Aimbot**: Entity list traversal → View matrix calculation
-
 Detection mechanisms corresponding to each attack technique are implemented together.
 
 ## 🎓 Learning Points
@@ -183,7 +174,7 @@ Suggestions for new techniques with educational value are welcome
 
 ## 📬 Contact
 
-Project inquiries: [Email/GitHub Issues]
+Project inquiries: [tlkj12@gmail.com]
 
 ---
 
