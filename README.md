@@ -57,7 +57,7 @@
 - **Manual Mapping**: PE 구조 분석 및 직접 매핑
 - **SSDT 인덱스 추출**: 커널 함수 직접 호출
 - **API 후킹**: IAT/Inline/Trampoline 기법
-- **Memory Protection Bypass**: VirtualProtect 우회
+- **Memory Protection Bypass**: ZwProtectVirtualMemory 우회
 
 ### 방어 기법 (Defensive)
 - **Integrity Checking**: CRC32/MD5 기반 코드 무결성
