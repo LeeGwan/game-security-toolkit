@@ -57,7 +57,7 @@ Implementation and analysis of various hooking techniques
 - **Manual Mapping**: PE structure analysis and direct mapping
 - **SSDT Index Extraction**: Direct kernel function calls
 - **API Hooking**: IAT/Inline/Trampoline techniques
-- **Memory Protection Bypass**: VirtualProtect evasion
+- **Memory Protection Bypass**: ZwProtectVirtualMemory evasion
 
 ### Defensive Techniques
 - **Integrity Checking**: CRC32/MD5-based code integrity
