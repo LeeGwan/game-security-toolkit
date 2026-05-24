@@ -4,10 +4,20 @@
 
 #pragma comment(lib, "ntdll.lib")
 
-// x64 ARCH
+// Target architecture: x64
 #define CURRENT_ARCH IMAGE_FILE_MACHINE_AMD64
 
-// Shellcode executed in remote process to map DLL
+/**
+ * @brief Shellcode executed in the target process to perform manual mapping.
+ * * This function is copied to the remote process and handles:
+ * 1. Base Relocation: Adjusting absolute addresses based on the new base.
+ * 2. IAT Resolution: Loading required DLLs and resolving function addresses.
+ * 3. TLS Callbacks: Executing Thread Local Storage initialization.
+ * 4. SEH Registration: Registering exception handlers (x64 specific).
+ * 5. DllMain Execution: Invoking the entry point of the mapped DLL.
+ * * @param pData Pointer to a RemoteMappingData structure containing necessary context.
+ * @return DWORD TRUE if mapping is successful, FALSE otherwise.
+ */
 DWORD WINAPI RemoteMapperShellcode(RemoteMappingData* pData)
 {
 	if (!pData || !pData->pImageBase)
@@ -22,7 +32,10 @@ DWORD WINAPI RemoteMapperShellcode(RemoteMappingData* pData)
 	auto pNtHeader = reinterpret_cast<IMAGE_NT_HEADERS*>(pBase + pDosHeader->e_lfanew);
 	auto& pOpt = pNtHeader->OptionalHeader;
 
-	// Resolve Relocation
+	/**
+	 * 1. Base Relocation Logic
+	 * Adjusts the memory addresses if the DLL is not loaded at its preferred Base Address.
+	 */
 	BYTE* LocationDelta = pBase - pOpt.ImageBase;
 	if (LocationDelta && pOpt.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size)
 	{
@@ -52,7 +65,10 @@ DWORD WINAPI RemoteMapperShellcode(RemoteMappingData* pData)
 		}
 	}
 
-	// Resolve IAT
+	/**
+	 * 2. IAT (Import Address Table) Resolution
+	 * Manually resolves dependencies and populates the IAT.
+	 */
 	if (pOpt.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size)
 	{
 		auto pImportDescr = reinterpret_cast<IMAGE_IMPORT_DESCRIPTOR*>(
@@ -91,7 +107,7 @@ DWORD WINAPI RemoteMapperShellcode(RemoteMappingData* pData)
 		}
 	}
 
-	//TLS Callbacks
+	// 3. Execute TLS Callbacks
 	if (pOpt.DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].Size)
 	{
 		auto pTLS = reinterpret_cast<IMAGE_TLS_DIRECTORY*>(
@@ -102,7 +118,7 @@ DWORD WINAPI RemoteMapperShellcode(RemoteMappingData* pData)
 			(*pCallback)(pBase, DLL_PROCESS_ATTACH, nullptr);
 	}
 
-	// Register SEH exception handlers
+	// 4. Register SEH exception handlers for x64
 	if (pData->bSEHSupport)
 	{
 		auto& excep = pOpt.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION];
@@ -114,7 +130,7 @@ DWORD WINAPI RemoteMapperShellcode(RemoteMappingData* pData)
 		}
 	}
 
-	// Call DllMain
+	// 5. Invoke DllMain (Entry Point)
 	if (pData->dwEntryPoint)
 	{
 		auto DllMain = reinterpret_cast<f_DLL_ENTRY_POINT>(pBase + pData->dwEntryPoint);
@@ -122,7 +138,7 @@ DWORD WINAPI RemoteMapperShellcode(RemoteMappingData* pData)
 			return FALSE;
 	}
 
-	// Clear PE Header
+	// 6. Stealth: Clear PE Headers from memory to avoid signature scanning
 	if (pData->bClearHeader)
 	{
 		for (DWORD i = 0; i < 0x1000; ++i)
@@ -132,6 +148,9 @@ DWORD WINAPI RemoteMapperShellcode(RemoteMappingData* pData)
 	return TRUE;
 }
 
+/**
+ * @brief Marker function used to calculate the size of the shellcode.
+ */
 DWORD WINAPI RemoteMapperShellcode_END() { return 0; }
 
 
@@ -169,9 +188,11 @@ void RemoteManualMapper::CloseTargetProcess()
 	}
 }
 
+/**
+ * @brief Validates if the provided buffer is a valid x64 PE file.
+ */
 bool RemoteManualMapper::ValidatePEFile(BYTE* pSrcData)
 {
-	// Validate PE structure
 	auto pDosHeader = reinterpret_cast<IMAGE_DOS_HEADER*>(pSrcData);
 	if (pDosHeader->e_magic != 0x5A4D)
 	{
@@ -188,13 +209,17 @@ bool RemoteManualMapper::ValidatePEFile(BYTE* pSrcData)
 
 	if (pNtHeader->FileHeader.Machine != CURRENT_ARCH)
 	{
-		LogError("Architecture mismatch");
+		LogError("Architecture mismatch (Requires x64)");
 		return false;
 	}
 
 	return true;
 }
 
+/**
+ * @brief Loads the DLL into local memory and decrypts it if encrypted.
+ * * This helps bypass file-system level scans by anti-cheat solutions.
+ */
 BYTE* RemoteManualMapper::LoadAndDecryptDll(const char* dllPath, SIZE_T& fileSize)
 {
 	std::ifstream file(dllPath, std::ios::binary | std::ios::ate);
@@ -207,7 +232,7 @@ BYTE* RemoteManualMapper::LoadAndDecryptDll(const char* dllPath, SIZE_T& fileSiz
 	fileSize = (SIZE_T)file.tellg();
 	if (fileSize < 0x1000)
 	{
-		LogError("File too small");
+		LogError("File too small to be a valid PE");
 		file.close();
 		return nullptr;
 	}
@@ -217,13 +242,14 @@ BYTE* RemoteManualMapper::LoadAndDecryptDll(const char* dllPath, SIZE_T& fileSiz
 	file.read((char*)pFileData, fileSize);
 	file.close();
 
-	LogInfo("DLL file loaded");
-	//안티치트중 파일 검사 로직 우회(Bypass file scan detection)
-	if (pFileData[0] != 0x4d)
+	LogInfo("DLL file loaded into memory");
+
+	// Bypass: Decrypt the file if it's encrypted (e.g., hidden from disk scanners)
+	if (pFileData[0] != 0x4d) // 0x4d = 'M' (MZ Header start)
 	{
 		Xor_File C_xor;
 		pFileData = C_xor.Xor_dll(pFileData, fileSize);
-		LogInfo("DLL decrypted");
+		LogInfo("DLL decrypted successfully");
 	}
 
 	return pFileData;
@@ -263,23 +289,28 @@ bool RemoteManualMapper::ReadRemoteMemory(BYTE* remoteAddr, void* buffer, SIZE_T
 	return read == size;
 }
 
+/**
+ * @brief Maps PE headers and sections to the target process memory.
+ */
 bool RemoteManualMapper::WriteImageToRemote(BYTE* remoteBase, BYTE* localImage, SIZE_T imageSize)
 {
 	auto pDosHeader = reinterpret_cast<IMAGE_DOS_HEADER*>(localImage);
 	auto pNtHeader = reinterpret_cast<IMAGE_NT_HEADERS*>(localImage + pDosHeader->e_lfanew);
 
-	LogInfo("Writing PE headers...");
+	LogInfo("Writing PE headers to remote process...");
 	if (!WriteRemoteMemory(remoteBase, localImage, 0x1000))
 		return false;
 
-	LogInfo("Writing sections...");
+	LogInfo("Writing sections to remote process...");
 	return WriteSectionsToRemote(remoteBase, localImage, pNtHeader);
 }
 
+/**
+ * @brief Iterates through PE sections and maps them individually to the remote base.
+ */
 bool RemoteManualMapper::WriteSectionsToRemote(
 	BYTE* remoteBase, BYTE* localImage, IMAGE_NT_HEADERS* pNtHeader)
 {
-	// Write PE sections
 	auto pSection = IMAGE_FIRST_SECTION(pNtHeader);
 
 	for (UINT i = 0; i < pNtHeader->FileHeader.NumberOfSections; ++i, ++pSection)
@@ -296,7 +327,11 @@ bool RemoteManualMapper::WriteSectionsToRemote(
 	}
 	return true;
 }
-//get real function address
+
+/**
+ * @brief Resolves JMP/CALL targets to extract the raw machine code of the shellcode.
+ * * Necessary because compilers often generate incremental linking thunks.
+ */
 BYTE* RemoteManualMapper::ResolveJumpTarget(BYTE* pStart) {
 	
 	if (!pStart) return nullptr;
@@ -304,14 +339,14 @@ BYTE* RemoteManualMapper::ResolveJumpTarget(BYTE* pStart) {
 	uint8_t op = pStart[0];
 
 	switch (op) {
-	case 0xE9:  // jmp near
-	case 0xE8:  // call
+	case 0xE9:  // JMP near
+	case 0xE8:  // CALL
 	{
 		int32_t rel = *reinterpret_cast<int32_t*>(pStart + 1);
 		uintptr_t target = reinterpret_cast<uintptr_t>(pStart) + 5 + static_cast<intptr_t>(rel);
 		return reinterpret_cast<BYTE*>(target);
 	}
-	case 0xEB:  // jmp short
+	case 0xEB:  // JMP short
 	{
 		int8_t rel8 = *reinterpret_cast<int8_t*>(pStart + 1);
 		uintptr_t target = reinterpret_cast<uintptr_t>(pStart) + 2 + static_cast<intptr_t>(rel8);
@@ -324,44 +359,44 @@ BYTE* RemoteManualMapper::ResolveJumpTarget(BYTE* pStart) {
 	return nullptr;
 }
 
+/**
+ * @brief Extracts the machine code from the RemoteMapperShellcode function.
+ */
 BYTE* RemoteManualMapper::CreateMapperShellcode(SIZE_T& shellcodeSize)
 {
-	// Extract shellcode from function
 	BYTE* pStart = reinterpret_cast<BYTE*>(RemoteMapperShellcode);
-
 	BYTE* pEnd = reinterpret_cast<BYTE*>(RemoteMapperShellcode_END);
 
-
-
+	// Bypass incremental linking thunks if present
 	pStart = ResolveJumpTarget(pStart);
-
 	pEnd = ResolveJumpTarget(pEnd);
+	
 	shellcodeSize = pEnd - pStart;
 
 	if (shellcodeSize == 0 || shellcodeSize > 0x100000)
 	{
-		LogError("Invalid shellcode size");
+		LogError("Invalid shellcode size calculation");
 		return nullptr;
 	}
-
-	std::cout << "Shellcode size: " << shellcodeSize << " bytes" << std::endl;
 
 	BYTE* pCopy = new BYTE[shellcodeSize];
 	memcpy(pCopy, (BYTE*)pStart, shellcodeSize);
 
+	// Patching potential compiler-inserted stack checks (__security_check_cookie thunks)
 	if (pCopy[0x1A] == 0xE8)
 	{
-		memset(&pCopy[0x1A], 0x90, 5);
+		memset(&pCopy[0x1A], 0x90, 5); // NOP out the call
 	}
 	return pCopy;
 }
 
+/**
+ * @brief Spawns a remote thread to execute the mapping shellcode.
+ */
 bool RemoteManualMapper::ExecuteRemoteMapper(
 	BYTE* remoteShellcode, BYTE* remoteMappingData)
 {
-	// CreateRemoteThread를 호출하여 대상 프로세스에 원격 스레드를 생성하고,
-	// remoteShellcode(원격 메모리 주소)를 시작 루틴으로 실행하며 remoteMappingData를 인자로 전달한다.
-	LogInfo("Executing remote mapper");
+	LogInfo("Spawning remote thread for shellcode execution...");
 	HANDLE hThread = CreateRemoteThread(
 		m_hTargetProcess, nullptr, 0,
 		reinterpret_cast<LPTHREAD_START_ROUTINE>(remoteShellcode),
@@ -373,12 +408,12 @@ bool RemoteManualMapper::ExecuteRemoteMapper(
 		return false;
 	}
 
-	LogInfo("Waiting for completion...");
+	LogInfo("Waiting for mapping to complete...");
 	DWORD waitResult = WaitForSingleObject(hThread, 30000);
 
 	if (waitResult == WAIT_TIMEOUT)
 	{
-		LogError("Remote thread timed out");
+		LogError("Remote thread timed out (30s limit)");
 		CloseHandle(hThread);
 		return false;
 	}
@@ -389,21 +424,24 @@ bool RemoteManualMapper::ExecuteRemoteMapper(
 
 	if (exitCode == FALSE)
 	{
-		LogError("Remote mapper returned FALSE");
+		LogError("Shellcode returned FALSE in target process");
 		return false;
 	}
 
-	LogInfo("Remote mapper executed successfully!");
+	LogInfo("Injection completed successfully!");
 	return true;
 }
 
+/**
+ * @brief Main Entry: Orchestrates the entire manual mapping process.
+ */
 InjectionResult RemoteManualMapper::InjectDll(
 	DWORD processId, const char* dllPath, bool clearHeader)
 {
 	InjectionResult result;
 
 	std::cout << "\n========================================\n"
-		<< "Remote Manual Mapper\n"
+		<< "Remote Manual Mapper (x64)\n"
 		<< "========================================\n"
 		<< "Target PID: " << processId << "\n"
 		<< "DLL: " << dllPath << "\n"
@@ -412,23 +450,22 @@ InjectionResult RemoteManualMapper::InjectDll(
 
 	if (!OpenTargetProcess(processId))
 	{
-		result.errorMessage = "Failed to open process";
+		result.errorMessage = "Failed to open target process";
 		return result;
 	}
 
 	SIZE_T fileSize;
-	// Load and decrypt DLL
 	BYTE* pDllData = LoadAndDecryptDll(dllPath, fileSize);
 	if (!pDllData)
 	{
-		result.errorMessage = "Failed to load DLL";
+		result.errorMessage = "Failed to load/decrypt DLL";
 		CloseTargetProcess();
 		return result;
 	}
-	// Validate PE structure
+
 	if (!ValidatePEFile(pDllData))
 	{
-		result.errorMessage = "PE validation failed";
+		result.errorMessage = "Invalid PE structure";
 		delete[] pDllData;
 		CloseTargetProcess();
 		return result;
@@ -436,25 +473,28 @@ InjectionResult RemoteManualMapper::InjectDll(
 
 	auto pDos = reinterpret_cast<IMAGE_DOS_HEADER*>(pDllData);
 	auto pNt = reinterpret_cast<IMAGE_NT_HEADERS*>(pDllData + pDos->e_lfanew);
-	// Allocate memory in target process
+
+	// 1. Allocate memory in target process for the image
 	BYTE* pRemoteImage = AllocateRemoteMemory(pNt->OptionalHeader.SizeOfImage);
 	if (!pRemoteImage)
 	{
-		result.errorMessage = "Allocation failed";
+		result.errorMessage = "Remote allocation failed";
 		delete[] pDllData;
 		CloseTargetProcess();
 		return result;
 	}
-	// Write PE to target process
+
+	// 2. Map headers and sections
 	if (!WriteImageToRemote(pRemoteImage, pDllData, pNt->OptionalHeader.SizeOfImage))
 	{
-		result.errorMessage = "Write failed";
+		result.errorMessage = "Failed to write image to remote process";
 		VirtualFreeEx(m_hTargetProcess, pRemoteImage, 0, MEM_RELEASE);
 		delete[] pDllData;
 		CloseTargetProcess();
 		return result;
 	}
-	// Prepare mapping data
+
+	// 3. Prepare Mapping Context (Pointers to APIs)
 	RemoteMappingData mappingData = { 0 };
 	HMODULE hK32 = GetModuleHandleA("kernel32.dll");
 	HMODULE hNtdll = GetModuleHandleA("ntdll.dll");
@@ -470,18 +510,19 @@ InjectionResult RemoteManualMapper::InjectDll(
 	BYTE* pRemoteMappingData = AllocateRemoteMemory(sizeof(RemoteMappingData));
 	if (!pRemoteMappingData || !WriteRemoteMemory(pRemoteMappingData, &mappingData, sizeof(RemoteMappingData)))
 	{
-		result.errorMessage = "Mapping data failed";
+		result.errorMessage = "Failed to write mapping data";
 		VirtualFreeEx(m_hTargetProcess, pRemoteImage, 0, MEM_RELEASE);
 		delete[] pDllData;
 		CloseTargetProcess();
 		return result;
 	}
-	// Create and write shellcode
+
+	// 4. Create and Write Shellcode
 	SIZE_T shellcodeSize;
 	BYTE* pShellcode = CreateMapperShellcode(shellcodeSize);
 	if (!pShellcode)
 	{
-		result.errorMessage = "Shellcode failed";
+		result.errorMessage = "Failed to extract shellcode";
 		VirtualFreeEx(m_hTargetProcess, pRemoteImage, 0, MEM_RELEASE);
 		VirtualFreeEx(m_hTargetProcess, pRemoteMappingData, 0, MEM_RELEASE);
 		delete[] pDllData;
@@ -492,7 +533,7 @@ InjectionResult RemoteManualMapper::InjectDll(
 	BYTE* pRemoteShellcode = AllocateRemoteMemory(shellcodeSize);
 	if (!pRemoteShellcode || !WriteRemoteMemory(pRemoteShellcode, pShellcode, shellcodeSize))
 	{
-		result.errorMessage = "Shellcode write failed";
+		result.errorMessage = "Failed to write shellcode to remote memory";
 		delete[] pShellcode;
 		VirtualFreeEx(m_hTargetProcess, pRemoteImage, 0, MEM_RELEASE);
 		VirtualFreeEx(m_hTargetProcess, pRemoteMappingData, 0, MEM_RELEASE);
@@ -502,10 +543,11 @@ InjectionResult RemoteManualMapper::InjectDll(
 	}
 
 	delete[] pShellcode;
-	// Execute injection
+
+	// 5. Execution Phase
 	if (!ExecuteRemoteMapper(pRemoteShellcode, pRemoteMappingData))
 	{
-		result.errorMessage = "Execution failed";
+		result.errorMessage = "Shellcode execution failed";
 		VirtualFreeEx(m_hTargetProcess, pRemoteImage, 0, MEM_RELEASE);
 		VirtualFreeEx(m_hTargetProcess, pRemoteMappingData, 0, MEM_RELEASE);
 		VirtualFreeEx(m_hTargetProcess, pRemoteShellcode, 0, MEM_RELEASE);
@@ -514,6 +556,7 @@ InjectionResult RemoteManualMapper::InjectDll(
 		return result;
 	}
 
+	// Cleanup artifacts (Keep the mapped image, free the loader/shellcode)
 	VirtualFreeEx(m_hTargetProcess, pRemoteShellcode, 0, MEM_RELEASE);
 	VirtualFreeEx(m_hTargetProcess, pRemoteMappingData, 0, MEM_RELEASE);
 
@@ -523,14 +566,12 @@ InjectionResult RemoteManualMapper::InjectDll(
 	result.success = true;
 	result.remoteBaseAddress = pRemoteImage;
 
-	std::cout << "\n========================================\n"
-		<< "Injection Successful!\n"
-		<< "Base: 0x" << std::hex << (uintptr_t)pRemoteImage << "\n"
-		<< "========================================\n" << std::endl;
-
 	return result;
 }
 
+/**
+ * @brief Unmaps the DLL from the target process.
+ */
 bool RemoteManualMapper::UnmapRemoteDll(DWORD processId, BYTE* remoteBase)
 {
 	if (!OpenTargetProcess(processId))
@@ -539,9 +580,9 @@ bool RemoteManualMapper::UnmapRemoteDll(DWORD processId, BYTE* remoteBase)
 	bool success = VirtualFreeEx(m_hTargetProcess, remoteBase, 0, MEM_RELEASE);
 
 	if (success)
-		LogInfo("DLL unmapped");
+		LogInfo("Target DLL successfully unmapped");
 	else
-		LogError("Unmap failed");
+		LogError("Failed to unmap DLL");
 
 	CloseTargetProcess();
 	return success;
